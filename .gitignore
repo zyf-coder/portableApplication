@@ -1,0 +1,7 @@
+# 忽略本地构建产物
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+.DS_Store
