@@ -1,5 +1,5 @@
-/* 便捷工具 v1.1.0 */
-const CACHE = "bianjie-v1.1.0";
+/* 便捷工具 v1.1.1 */
+const CACHE = "bianjie-v1.1.1";
 const ASSETS = [
   "./",
   "./index.html",

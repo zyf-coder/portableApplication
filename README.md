@@ -3,7 +3,7 @@
 跨端实用工具：**无水印提取** + **证件照制作**。  
 Web / PWA 单文件可直接用；Android WebView 壳可通过 Actions 打出 APK。
 
-**当前版本：v1.1.0**
+**当前版本：v1.1.1**
 
 仓库：https://github.com/zyf-coder/portableApplication
 

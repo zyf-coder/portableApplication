@@ -1,5 +1,10 @@
 # 更新日志
 
+## [1.1.1] - 2026-02-14
+
+### Fixed
+- GitHub Actions 创建 Release 时补充 `contents: write`，标签发布可自动挂上 APK
+
 ## [1.1.0] - 2026-02-14
 
 ### Added
