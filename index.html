@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B1220" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>便捷工具</title>
+<style>
+:root {
+  --ink: #0B1220;
+  --ink-soft: #1E293B;
+  --muted: #64748B;
+  --paper: #F1F5F9;
+  --surface: #FFFFFF;
+  --line: #E2E8F0;
+  --blue: #2563EB;
+  --blue-soft: #EFF6FF;
+  --blue-line: #BFDBFE;
+  --green: #0D9488;
+  --green-soft: #F0FDFA;
+  --green-line: #99F6E4;
+  --danger: #DC2626;
+  --warn: #D97706;
+  --ok: #059669;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --nav-h: 64px;
+  --header-h: 56px;
+  --max: 1100px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Consolas, "Cascadia Code", monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { color: var(--blue); }
+img, canvas, video { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+
+/* ===== Shell ===== */
+.app {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  height: var(--header-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 17px; letter-spacing: -0.02em;
+}
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), var(--green));
+  display: grid; place-items: center;
+  color: #fff; font-size: 12px; font-weight: 800;
+}
+.brand-sub { color: var(--muted); font-size: 12px; font-weight: 500; margin-left: 2px; }
+.top-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center;
+  color: var(--ink-soft);
+  background: transparent;
+  transition: background .15s;
+}
+.icon-btn:hover, .icon-btn:focus-visible { background: var(--paper); outline: none; }
+.icon-btn:focus-visible { box-shadow: 0 0 0 2px var(--blue); }
+.icon-btn svg { width: 20px; height: 20px; }
+
+.layout { display: contents; }
+.sidebar { display: none; }
+.main {
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+}
+
+.bottom-nav {
+  position: sticky; bottom: 0; z-index: 40;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; color: var(--muted); font-size: 11px; font-weight: 600;
+  min-height: 56px;
+  transition: color .15s;
+}
+.nav-item svg { width: 22px; height: 22px; }
+.nav-item.active { color: var(--blue); }
+.nav-item[data-view="id"].active { color: var(--green); }
+.nav-item:focus-visible { outline: none; color: var(--ink); }
+
+/* ===== Common ===== */
+.panel-title {
+  font-size: 22px; font-weight: 800; letter-spacing: -0.03em;
+  margin-bottom: 6px;
+}
+.panel-desc {
+  color: var(--muted); font-size: 14px; margin-bottom: 18px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.card + .card { margin-top: 14px; }
+.card-title {
+  font-size: 14px; font-weight: 700; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.field { margin-bottom: 12px; }
+.field label {
+  display: block; font-size: 12px; font-weight: 600; color: var(--muted);
+  margin-bottom: 6px;
+}
+.input, .textarea, .select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.input:focus, .textarea:focus, .select:focus {
+  border-color: var(--blue);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+.textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.hint code { font-family: var(--mono); font-size: 11px; background: var(--paper); padding: 1px 5px; border-radius: 4px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: transform .1s, background .15s, opacity .15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.35); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.btn-green { background: var(--green); color: #fff; }
+.btn-green:hover:not(:disabled) { background: #0f766e; }
+.btn-ghost {
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+}
+.btn-ghost:hover:not(:disabled) { background: var(--paper); }
+.btn-block { width: 100%; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  background: var(--blue-soft); color: var(--blue);
+}
+.chip.green { background: var(--green-soft); color: var(--green); }
+.chip.muted { background: var(--paper); color: var(--muted); }
+.chip.warn { background: #FEF3C7; color: #B45309; }
+
+.seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  background: var(--paper);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.seg button {
+  min-height: 36px;
+  border-radius: 9px;
+  font-size: 13px; font-weight: 600;
+  color: var(--muted);
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.seg button.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+.seg button:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--blue); }
+
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 48px;
+}
+.switch-row .label { font-size: 14px; font-weight: 600; }
+.switch-row .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.switch {
+  position: relative; width: 48px; height: 28px; flex-shrink: 0;
+  background: #CBD5E1; border-radius: 999px;
+  transition: background .15s;
+}
+.switch[aria-checked="true"] { background: var(--blue); }
+.switch[aria-checked="true"].green { background: var(--green); }
+.switch::after {
+  content: "";
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform .15s;
+}
+.switch[aria-checked="true"]::after { transform: translateX(20px); }
+
+.empty {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty strong { display: block; color: var(--ink); font-size: 14px; margin-bottom: 4px; }
+
+.progress {
+  height: 6px; background: var(--paper); border-radius: 999px; overflow: hidden;
+}
+.progress > i {
+  display: block; height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--blue), #60a5fa);
+  border-radius: inherit;
+  transition: width .25s ease;
+}
+.progress.green > i { background: linear-gradient(90deg, var(--green), #2dd4bf); }
+
+/* ===== Extract ===== */
+.platform-row {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+.platform-pill {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 8px; border-radius: 8px;
+  background: var(--paper); color: var(--muted);
+  border: 1px solid transparent;
+}
+.platform-pill.hit {
+  background: var(--blue-soft); color: var(--blue); border-color: var(--blue-line);
+}
+
+.result-list { display: grid; gap: 10px; margin-top: 14px; }
+.result-item {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+.result-head {
+  display: flex; gap: 12px; padding: 12px;
+  align-items: flex-start;
+}
+.thumb {
+  width: 72px; height: 72px; border-radius: 10px;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  flex-shrink: 0;
+  display: grid; place-items: center;
+  color: var(--muted); font-size: 11px; font-weight: 700;
+  overflow: hidden;
+  position: relative;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.thumb .type-tag {
+  position: absolute; left: 4px; bottom: 4px;
+  background: rgba(15,23,42,.75); color: #fff;
+  font-size: 10px; padding: 1px 5px; border-radius: 4px;
+}
+.result-meta { flex: 1; min-width: 0; }
+.result-meta h3 {
+  font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.result-meta .meta-line {
+  font-size: 12px; color: var(--muted);
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.result-actions {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 0 12px 12px;
+}
+.status-line {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--muted);
+  margin-top: 8px;
+}
+.spin {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--blue-line);
+  border-top-color: var(--blue);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.manual-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+
+/* ===== ID Photo ===== */
+.id-stage {
+  position: relative;
+  background: #0f172a;
+  border-radius: var(--radius);
+  overflow: hidden;
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+}
+.id-stage canvas {
+  max-width: 100%;
+  max-height: 420px;
+  touch-action: none;
+  cursor: grab;
+}
+.id-stage canvas:active { cursor: grabbing; }
+.id-guide {
+  position: absolute;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(15,23,42,.28);
+  border-radius: 2px;
+}
+.id-guide::before, .id-guide::after { content: none; }
+.face-oval { display: none; }
+.stage-empty {
+  color: #94A3B8; text-align: center; font-size: 13px; padding: 40px 20px;
+  position: relative; z-index: 1;
+}
+.stage-empty strong { display: block; color: #E2E8F0; font-size: 15px; margin-bottom: 6px; }
+.stage-actions {
+  position: absolute; left: 12px; right: 12px; bottom: 12px;
+  display: flex; justify-content: space-between; gap: 8px;
+  z-index: 2;
+}
+.stage-actions .btn {
+  background: rgba(15,23,42,.72); color: #fff; border: 1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(8px);
+}
+.zoom-row {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  margin-top: 12px;
+}
+.zoom-row span { font-size: 12px; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--green); }
+
+.bg-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch {
+  width: 44px; height: 44px; border-radius: 12px;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.12);
+  position: relative;
+}
+.swatch.active { border-color: var(--ink); }
+.swatch.active::after {
+  content: "✓";
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0,0,0,.45);
+}
+.swatch[data-color="#FFFFFF"].active::after,
+.swatch[data-color="#F8FAFC"].active::after { color: #0B1220; text-shadow: none; }
+
+.size-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.size-card {
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+  text-align: left;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.size-card.active {
+  border-color: var(--green);
+  background: var(--green-soft);
+  box-shadow: 0 0 0 3px rgba(13,148,136,.12);
+}
+.size-card .name { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+.size-card .dim {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.size-card .px { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 4px; }
+
+.preview-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+.preview-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+  background: #fff;
+}
+.preview-item canvas {
+  width: 100%; height: auto; border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.preview-item .cap {
+  font-size: 11px; color: var(--muted); margin-top: 6px; font-weight: 600;
+}
+
+/* ===== Stepper ===== */
+.stepper {
+  display: flex; gap: 6px; margin: 0 0 14px;
+  overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.stepper::-webkit-scrollbar { display: none; }
+.step-dot {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  white-space: nowrap;
+}
+.step-dot i {
+  width: 100%; max-width: 72px; height: 3px; border-radius: 99px;
+  background: var(--line); display: block;
+}
+.step-dot.done { color: var(--ok); }
+.step-dot.done i { background: var(--ok); }
+.step-dot.active { color: var(--green); }
+.step-dot.active i { background: var(--green); }
+
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+.step-panel.done-summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 14px; margin-bottom: 10px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: var(--green-soft);
+}
+.step-panel.done-summary .sum-text { font-size: 13px; font-weight: 700; color: var(--ink); }
+.step-panel.done-summary .sum-sub { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+.step-panel.done-summary .btn { flex-shrink: 0; }
+
+.compact-textarea { min-height: 84px; }
+.tight-hint { margin-top: 0; margin-bottom: 10px; }
+.card.collapsed-hide { display: none; }
+.details-box {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); overflow: hidden;
+}
+.details-box > summary {
+  list-style: none; cursor: pointer;
+  padding: 14px 16px; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.details-box > summary::-webkit-details-marker { display: none; }
+.details-box > summary::after {
+  content: "展开"; font-size: 12px; font-weight: 600; color: var(--muted);
+}
+.details-box[open] > summary::after { content: "收起"; }
+.details-box .details-body { padding: 0 16px 16px; }
+
+/* ===== Settings sheet ===== */
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 50;
+  background: rgba(15,23,42,.45);
+  display: grid; align-items: end;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+.sheet {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
+  max-height: 85vh;
+  overflow: auto;
+  transform: translateY(20px);
+  transition: transform .2s;
+}
+.sheet-backdrop.open .sheet { transform: translateY(0); }
+.sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.sheet-head h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+
+.legal {
+  font-size: 12px; color: var(--muted); line-height: 1.65;
+  margin-top: 8px;
+}
+.legal strong { color: var(--ink-soft); }
+
+/* ===== Toast ===== */
+.toasts {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: grid; gap: 8px;
+  width: min(360px, calc(100% - 32px));
+  pointer-events: none;
+}
+.toast {
+  background: var(--ink); color: #fff;
+  padding: 12px 14px; border-radius: 12px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow);
+  animation: toast-in .2s ease;
+}
+.toast.ok { background: #065F46; }
+.toast.err { background: #991B1B; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Desktop ===== */
+@media (min-width: 900px) {
+  .app {
+    grid-template-rows: var(--header-h) 1fr;
+    grid-template-columns: 220px 1fr;
+    max-width: var(--max);
+    margin: 0 auto;
+    background: #fff;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    min-height: 100vh;
+  }
+  .topbar { grid-column: 1 / -1; }
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 0;
+  }
+  .sidebar {
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--line);
+    padding: 16px 12px;
+    background: #FAFBFC;
+  }
+  .side-nav { display: grid; gap: 4px; }
+  .side-nav .nav-item {
+    flex-direction: row; justify-content: flex-start;
+    gap: 10px; padding: 0 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+  .side-nav .nav-item.active { background: var(--blue-soft); color: var(--blue); }
+  .side-nav .nav-item[data-view="id"].active { background: var(--green-soft); color: var(--green); }
+  .side-foot {
+    margin-top: auto;
+    font-size: 11px; color: var(--muted);
+    padding: 12px;
+    line-height: 1.5;
+  }
+  .bottom-nav { display: none; }
+  .main { padding: 28px 32px 48px; }
+  .toasts { bottom: 24px; left: auto; right: 24px; transform: none; }
+  .sheet-backdrop { align-items: stretch; justify-items: end; }
+  .sheet {
+    width: 380px; max-height: none; height: 100%;
+    border-radius: 0;
+    transform: translateX(16px);
+  }
+  .sheet-backdrop.open .sheet { transform: translateX(0); }
+  .panel-title { font-size: 28px; }
+  .id-stage { min-height: 400px; }
+  .preview-strip { grid-template-columns: repeat(3, minmax(0, 160px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">便</div>
+      <div>
+        便捷工具
+        <span class="brand-sub" id="brandSub">无水印提取</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="btnHelp" aria-label="使用说明" title="使用说明">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.6 2.25c-.7.35-1.1.8-1.1 1.55V13"/><circle cx="12" cy="16.5" r=".8" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <button class="icon-btn" id="btnSettings" aria-label="设置" title="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 .4 1.1 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.14.37.36.7.65.95.29.25.66.4 1.05.45H21a2 2 0 1 1 0 4h-.09c-.64 0-1.24.28-1.66.75-.2.22-.35.48-.45.75Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <nav class="side-nav" aria-label="主导航">
+        <button class="nav-item active" data-view="extract">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          无水印提取
+        </button>
+        <button class="nav-item" data-view="id">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M13 10h5M13 14h3.5"/></svg>
+          证件照制作
+        </button>
+        <button class="nav-item" data-view="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4"/><path d="M4.6 15a1.7 1.7 0 0 1-.34 1.87l-.06.06a2 2 0 1 0 2.83 2.83l.06-.06A1.7 1.7 0 0 1 9 19.4"/></svg>
+          设置
+        </button>
+      </nav>
+      <div class="side-foot">仅下载已授权内容<br/>证件照全程本地处理</div>
+    </aside>
+
+    <main class="main">
+      <!-- ===== Extract ===== -->
+      <section id="view-extract" class="view">
+        <h1 class="panel-title">无水印提取</h1>
+        <p class="panel-desc">粘贴分享链接，解析无水印图片 / 视频（视频含封面）。</p>
+
+        <div class="card">
+          <div class="card-title">
+            粘贴分享链接
+            <span class="chip" id="detectChip">等待输入</span>
+          </div>
+          <div class="platform-row" id="platformRow">
+            <span class="platform-pill" data-p="douyin">抖音</span>
+            <span class="platform-pill" data-p="kuaishou">快手</span>
+            <span class="platform-pill" data-p="xiaohongshu">小红书</span>
+            <span class="platform-pill" data-p="weibo">微博</span>
+            <span class="platform-pill" data-p="bilibili">B站</span>
+            <span class="platform-pill" data-p="other">其他</span>
+          </div>
+          <div class="field">
+            <label for="linksInput">支持一次粘贴多条（每行一条）</label>
+            <textarea id="linksInput" class="textarea compact-textarea" placeholder="https://v.douyin.com/xxxxxx/&#10;https://www.xiaohongshu.com/explore/..." spellcheck="false"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnParse">开始解析</button>
+            <button class="btn btn-ghost" id="btnClearLinks">清空</button>
+            <button class="btn btn-ghost" id="btnDemo">示例</button>
+          </div>
+          <div class="status-line" id="parseStatus" hidden>
+            <div class="spin"></div>
+            <span>正在解析…</span>
+            <div style="flex:1"></div>
+            <div class="progress" style="width:90px"><i id="parseProgress"></i></div>
+          </div>
+        </div>
+
+        <div class="card collapsed-hide" id="resultCard">
+          <div class="card-title">
+            解析结果
+            <span class="chip" id="resultCount">0</span>
+          </div>
+          <div id="resultList" class="result-list"></div>
+          <div class="btn-row" id="batchActions" style="margin-top:12px">
+            <button class="btn btn-primary btn-sm" id="btnBatchAll">全部下载</button>
+            <button class="btn btn-ghost btn-sm" id="btnClearResults">清空结果</button>
+          </div>
+        </div>
+
+        <details class="details-box" id="manualBox">
+          <summary>手动直链下载</summary>
+          <div class="details-body">
+            <p class="hint tight-hint">解析失败时，粘贴图片 / 视频直链仍可下载。</p>
+            <div class="field">
+              <label for="directUrl">直链地址</label>
+              <input id="directUrl" class="input" type="url" placeholder="https://example.com/video.mp4 或 .jpg" />
+            </div>
+            <div class="field">
+              <label for="directName">文件名（可选）</label>
+              <input id="directName" class="input" type="text" placeholder="我的素材" />
+            </div>
+            <button class="btn btn-primary btn-block" id="btnDirectDownload">下载</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- ===== ID Photo ===== -->
+      <section id="view-id" class="view" hidden>
+        <h1 class="panel-title">证件照制作</h1>
+        <p class="panel-desc">一步步完成：选尺寸 → 传照片 → 换底 → 导出。全程本地处理。</p>
+
+        <div class="stepper" id="idStepper" aria-label="步骤">
+          <div class="step-dot active" data-step="1"><i></i><span>尺寸</span></div>
+          <div class="step-dot" data-step="2"><i></i><span>照片</span></div>
+          <div class="step-dot" data-step="3"><i></i><span>背景</span></div>
+          <div class="step-dot" data-step="4"><i></i><span>导出</span></div>
+        </div>
+
+        <!-- Step 1: size -->
+        <div class="card step-panel active" data-step-panel="1" id="step1">
+          <div class="card-title">
+            选择尺寸
+            <span class="chip green">300 DPI</span>
+          </div>
+          <div class="size-cards" id="sizeCards">
+            <button class="size-card active" data-size="one">
+              <div class="name">一寸</div>
+              <div class="dim">25 × 35 mm</div>
+              <div class="px">295 × 413 px</div>
+            </button>
+            <button class="size-card" data-size="two">
+              <div class="name">二寸</div>
+              <div class="dim">35 × 49 mm</div>
+              <div class="px">413 × 579 px</div>
+            </button>
+          </div>
+          <button class="btn btn-green btn-block" id="btnStep1Next" style="margin-top:14px">下一步：上传照片</button>
+        </div>
+        <div class="step-panel done-summary" data-step-sum="1" hidden id="sum1">
+          <div>
+            <div class="sum-text" id="sum1Text">一寸 · 25×35mm</div>
+            <div class="sum-sub">295 × 413 px · 300dpi</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-goto="1">修改</button>
+        </div>
+
+        <!-- Step 2: photo -->
+        <div class="card step-panel" data-step-panel="2" id="step2">
+          <div class="card-title">上传并构图</div>
+          <div class="field">
+            <input type="file" id="photoInput" accept="image/*" hidden />
+            <button class="btn btn-green btn-block" id="btnPickPhoto">选择照片</button>
+            <div class="hint">正面免冠、光线均匀。滚轮 / 滑杆缩放，拖动调整位置。</div>
+          </div>
+
+          <div class="id-stage" id="idStage">
+            <div class="stage-empty" id="stageEmpty">
+              <strong>尚未选择照片</strong>
+              上传后可在本地调整构图
+            </div>
+            <canvas id="idCanvas" hidden></canvas>
+            <div class="id-guide" id="idGuide" hidden></div>
+            <div class="stage-actions" id="stageActions" hidden>
+              <button class="btn btn-sm" id="btnResetCrop">重置构图</button>
+              <button class="btn btn-sm" id="btnRetake">换一张</button>
+            </div>
+          </div>
+
+          <div class="zoom-row" id="zoomRow" hidden>
+            <span>缩放</span>
+            <input type="range" id="zoomRange" min="100" max="400" value="100" />
+            <span id="zoomVal">100%</span>
+          </div>
+          <button class="btn btn-green btn-block" id="btnStep2Next" style="margin-top:14px" disabled>下一步：换背景</button>
+        </div>
+        <div class="step-panel done-summary" data-step-sum="2" hidden id="sum2">
+          <div>
+            <div class="sum-text">照片已就绪</div>
+            <div class="sum-sub">可拖动微调，随时改构图</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-goto="2">修改构图</button>
+        </div>
+
+        <!-- Step 3: background -->
+        <div class="card step-panel" data-step-panel="3" id="step3">
+          <div class="card-title">换背景</div>
+          <div class="seg" id="bgModeSeg" style="margin-bottom:12px">
+            <button class="active" data-mode="auto">自动抠图</button>
+            <button data-mode="manual">仅换底色</button>
+          </div>
+          <div class="bg-swatches" id="bgSwatches" style="margin-bottom:10px">
+            <button class="swatch active" data-color="#FFFFFF" style="background:#FFFFFF" title="白底" aria-label="白底"></button>
+            <button class="swatch" data-color="#D32F2F" style="background:#D32F2F" title="红底" aria-label="红底"></button>
+            <button class="swatch" data-color="#1565C0" style="background:#1565C0" title="蓝底" aria-label="蓝底"></button>
+            <button class="swatch" data-color="#0D9488" style="background:#0D9488" title="青底" aria-label="青底"></button>
+            <label class="swatch" id="customSwatch" title="自定义" style="background:conic-gradient(#f87171,#fbbf24,#34d399,#60a5fa,#f87171);display:grid;place-items:center">
+              <input type="color" id="customColor" value="#4B5563" style="opacity:0;width:1px;height:1px" />
+              <span style="font-size:11px;font-weight:800;color:#fff;text-shadow:0 0 4px rgba(0,0,0,.5)">自</span>
+            </label>
+          </div>
+          <div class="hint" id="bgHint" style="margin-bottom:10px">从四角取样背景并抠除，适合纯色墙。</div>
+          <div class="switch-row" style="margin-bottom:8px">
+            <div>
+              <div class="label">柔和边缘</div>
+              <div class="sub">减少抠图锯齿</div>
+            </div>
+            <button class="switch green" id="switchSoft" role="switch" aria-checked="true" aria-label="柔和边缘"></button>
+          </div>
+          <button class="btn btn-green btn-block" id="btnStep3Next">下一步：预览导出</button>
+        </div>
+        <div class="step-panel done-summary" data-step-sum="3" hidden id="sum3">
+          <div>
+            <div class="sum-text" id="sum3Text">白底 · 自动抠图</div>
+            <div class="sum-sub">柔和边缘已开启</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" data-goto="3">修改背景</button>
+        </div>
+
+        <!-- Step 4: export -->
+        <div class="card step-panel" data-step-panel="4" id="step4">
+          <div class="card-title">
+            预览与导出
+            <span class="chip green" id="exportInfo">295×413</span>
+          </div>
+          <div class="preview-strip" id="previewStrip">
+            <div class="preview-item">
+              <canvas id="prevWhite" width="295" height="413"></canvas>
+              <div class="cap">白底</div>
+            </div>
+            <div class="preview-item">
+              <canvas id="prevRed" width="295" height="413"></canvas>
+              <div class="cap">红底</div>
+            </div>
+            <div class="preview-item">
+              <canvas id="prevBlue" width="295" height="413"></canvas>
+              <div class="cap">蓝底</div>
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:14px">
+            <button class="btn btn-green" id="btnExportJpg">导出 JPG</button>
+            <button class="btn btn-ghost" id="btnExportPng">导出 PNG</button>
+          </div>
+          <div class="hint">按 300dpi 对应物理尺寸导出。可返回上一步随时改底色。</div>
+          <button class="btn btn-ghost btn-block" id="btnRestartId" style="margin-top:12px">重新制作</button>
+        </div>
+      </section>
+
+      <!-- ===== Settings view (desktop also uses sheet) ===== -->
+      <section id="view-settings" class="view" hidden>
+        <h1 class="panel-title">设置</h1>
+        <p class="panel-desc">下载与隐私相关选项。</p>
+        <div class="card">
+          <div class="switch-row">
+            <div>
+              <div class="label">仅 Wi-Fi 下载</div>
+              <div class="sub">蜂窝网络下暂停任务，连上 Wi-Fi 自动继续</div>
+            </div>
+            <button class="switch" id="switchWifi" role="switch" aria-checked="false" aria-label="仅 Wi-Fi 下载"></button>
+          </div>
+          <div class="switch-row">
+            <div>
+              <div class="label">视频连带封面</div>
+              <div class="sub">下载视频时同时保存封面图</div>
+            </div>
+            <button class="switch" id="switchCover" role="switch" aria-checked="true" aria-label="视频连带封面"></button>
+          </div>
+          <div class="switch-row">
+            <div>
+              <div class="label">解析失败提示直链</div>
+              <div class="sub">失败时自动展开手动直链入口</div>
+            </div>
+            <button class="switch" id="switchFailHint" role="switch" aria-checked="true" aria-label="解析失败提示直链"></button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">合规说明</div>
+          <p class="legal">
+            <strong>使用约定</strong><br/>
+            1. 仅下载你自己拥有版权或已获授权的内容。<br/>
+            2. 不得去除他人作品水印后二次传播或商用。<br/>
+            3. 请遵守各平台服务条款与当地法律法规。<br/>
+            4. 证件照处理全程在设备本地完成，不会上传服务器。
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">关于</div>
+          <p class="legal">便捷工具 · 本地单页版<br/>演示解析流程与证件照本地处理。完整版可对接 FastAPI 解析后端与 rembg 服务。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" aria-label="底部导航">
+    <button class="nav-item active" data-view="extract">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      提取
+    </button>
+    <button class="nav-item" data-view="id">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M13 10h5M13 14h3.5"/></svg>
+      证件照
+    </button>
+  </nav>
+</div>
+
+<!-- Settings sheet (mobile) -->
+<div class="sheet-backdrop" id="sheetBackdrop" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <h2 id="sheetTitle">设置</h2>
+      <button class="icon-btn" id="btnCloseSheet" aria-label="关闭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="switch-row">
+      <div>
+        <div class="label">仅 Wi-Fi 下载</div>
+        <div class="sub">蜂窝网络下暂停，连上 Wi-Fi 继续</div>
+      </div>
+      <button class="switch" id="switchWifiSheet" role="switch" aria-checked="false" aria-label="仅 Wi-Fi 下载"></button>
+    </div>
+    <div class="switch-row">
+      <div>
+        <div class="label">视频连带封面</div>
+        <div class="sub">下载视频时同时保存封面图</div>
+      </div>
+      <button class="switch" id="switchCoverSheet" role="switch" aria-checked="true" aria-label="视频连带封面"></button>
+    </div>
+    <div class="switch-row">
+      <div>
+        <div class="label">解析失败提示直链</div>
+        <div class="sub">失败时自动聚焦手动直链入口</div>
+      </div>
+      <button class="switch" id="switchFailHintSheet" role="switch" aria-checked="true" aria-label="解析失败提示直链"></button>
+    </div>
+    <p class="legal" style="margin-top:18px">
+      <strong>合规</strong>：仅下载已授权内容；不得去水印二次传播他人作品；证件照本地处理不上传。
+    </p>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- helpers ----------
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+  function toast(msg, type = "") {
+    const el = document.createElement("div");
+    el.className = "toast" + (type ? " " + type : "");
+    el.textContent = msg;
+    $("#toasts").appendChild(el);
+    setTimeout(() => {
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 200);
+    }, 2600);
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  function bytes(n) {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / 1024 / 1024).toFixed(2) + " MB";
+  }
+
+  function uid() {
+    return Math.random().toString(36).slice(2, 10);
+  }
+
+  // ---------- state ----------
+  const state = {
+    view: "extract",
+    settings: {
+      wifiOnly: false,
+      saveCover: true,
+      failHint: true,
+    },
+    results: [],
+    id: {
+      size: "one", // one | two
+      bg: "#FFFFFF",
+      bgMode: "auto",
+      soft: true,
+      image: null,
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      dragging: false,
+      lastX: 0,
+      lastY: 0,
+    },
+  };
+
+  const SIZES = {
+    one: { name: "一寸", mmW: 25, mmH: 35, pxW: 295, pxH: 413 },
+    two: { name: "二寸", mmW: 35, mmH: 49, pxW: 413, pxH: 579 },
+  };
+
+  const PLATFORMS = [
+    { id: "douyin", name: "抖音", re: /(douyin\.com|iesdouyin\.com)/i, type: "video" },
+    { id: "kuaishou", name: "快手", re: /(kuaishou\.com|chenzhongtech\.com)/i, type: "video" },
+    { id: "xiaohongshu", name: "小红书", re: /(xiaohongshu\.com|xhslink\.com)/i, type: "image" },
+    { id: "weibo", name: "微博", re: /(weibo\.cn|weibo\.com|sina\.cn)/i, type: "image" },
+    { id: "bilibili", name: "B站", re: /(bilibili\.com|b23\.tv)/i, type: "video" },
+  ];
+
+  // ---------- navigation ----------
+  function setView(view) {
+    if (view === "settings" && window.matchMedia("(min-width:900px)").matches) {
+      // desktop uses the settings section; mobile uses sheet from topbar
+    }
+    state.view = view;
+    $$(".view").forEach((v) => {
+      v.hidden = v.id !== "view-" + view;
+    });
+    $$(".nav-item").forEach((n) => {
+      n.classList.toggle("active", n.dataset.view === view);
+    });
+    const subs = { extract: "无水印提取", id: "证件照制作", settings: "设置" };
+    $("#brandSub").textContent = subs[view] || "";
+    if (view === "id") syncIdPreview();
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+  }
+
+  $$(".nav-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const v = btn.dataset.view;
+      if (v === "settings") {
+        if (window.matchMedia("(min-width:900px)").matches) setView("settings");
+        else openSheet();
+        return;
+      }
+      setView(v);
+    });
+  });
+
+  // ---------- settings switches ----------
+  function bindSwitch(el, key, after) {
+    if (!el) return;
+    el.addEventListener("click", () => {
+      const next = el.getAttribute("aria-checked") !== "true";
+      state.settings[key] = next;
+      syncSwitches();
+      if (after) after(next);
+    });
+  }
+
+  function syncSwitches() {
+    const { wifiOnly, saveCover, failHint } = state.settings;
+    [["#switchWifi", wifiOnly], ["#switchWifiSheet", wifiOnly],
+     ["#switchCover", saveCover], ["#switchCoverSheet", saveCover],
+     ["#switchFailHint", failHint], ["#switchFailHintSheet", failHint]].forEach(([sel, val]) => {
+      const el = $(sel);
+      if (el) el.setAttribute("aria-checked", String(val));
+    });
+  }
+
+  bindSwitch($("#switchWifi"), "wifiOnly", (v) => toast(v ? "已开启仅 Wi-Fi 下载" : "已关闭仅 Wi-Fi 下载"));
+  bindSwitch($("#switchWifiSheet"), "wifiOnly", (v) => toast(v ? "已开启仅 Wi-Fi 下载" : "已关闭仅 Wi-Fi 下载"));
+  bindSwitch($("#switchCover"), "saveCover", (v) => toast(v ? "视频将连带封面" : "不再保存封面"));
+  bindSwitch($("#switchCoverSheet"), "saveCover", (v) => toast(v ? "视频将连带封面" : "不再保存封面"));
+  bindSwitch($("#switchFailHint"), "failHint");
+  bindSwitch($("#switchFailHintSheet"), "failHint");
+
+  function openSheet() {
+    const b = $("#sheetBackdrop");
+    b.hidden = false;
+    requestAnimationFrame(() => b.classList.add("open"));
+  }
+  function closeSheet() {
+    const b = $("#sheetBackdrop");
+    b.classList.remove("open");
+    setTimeout(() => { b.hidden = true; }, 200);
+  }
+  $("#btnSettings").addEventListener("click", openSheet);
+  $("#btnCloseSheet").addEventListener("click", closeSheet);
+  $("#sheetBackdrop").addEventListener("click", (e) => {
+    if (e.target.id === "sheetBackdrop") closeSheet();
+  });
+
+  $("#btnHelp").addEventListener("click", () => {
+    toast(state.view === "id" ? "上传照片 → 调构图 → 选底色 → 导出" : "粘贴分享链接 → 解析 → 下载；失败可用直链");
+  });
+
+  // ---------- EXTRACT ----------
+  const linksInput = $("#linksInput");
+
+  function detectPlatform(url) {
+    for (const p of PLATFORMS) {
+      if (p.re.test(url)) return p;
+    }
+    return { id: "other", name: "其他", type: url.match(/\.(mp4|mov|webm)(\?|$)/i) ? "video" : "image" };
+  }
+
+  function updateDetect() {
+    const text = linksInput.value.trim();
+    $$(".platform-pill").forEach((p) => p.classList.remove("hit"));
+    if (!text) {
+      $("#detectChip").textContent = "等待输入";
+      $("#detectChip").className = "chip";
+      return;
+    }
+    const lines = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+    const found = new Set();
+    lines.forEach((l) => found.add(detectPlatform(l).id));
+    found.forEach((id) => {
+      const pill = document.querySelector(`.platform-pill[data-p="${id}"]`);
+      if (pill) pill.classList.add("hit");
+    });
+    $("#detectChip").textContent = `已识别 ${lines.length} 条`;
+    $("#detectChip").className = "chip";
+  }
+
+  linksInput.addEventListener("input", updateDetect);
+
+  $("#btnClearLinks").addEventListener("click", () => {
+    linksInput.value = "";
+    updateDetect();
+  });
+
+  $("#btnDemo").addEventListener("click", () => {
+    linksInput.value = [
+      "https://v.douyin.com/iRNBho6u/",
+      "https://www.xiaohongshu.com/explore/64f0a1b2000000001e01c3d4",
+      "https://video.weibo.com/show?fid=1034:4958091234567890",
+    ].join("\n");
+    updateDetect();
+    toast("已载入示例链接");
+  });
+
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
+  function makeDemoResult(url, platform, index) {
+    const isVideo = platform.type === "video";
+    const title =
+      platform.id === "douyin" ? "今日份街头瞬间" :
+      platform.id === "xiaohongshu" ? "周末探店随手拍" :
+      platform.id === "weibo" ? "分享一组日常" :
+      platform.id === "kuaishou" ? "家乡风景记录" :
+      platform.id === "bilibili" ? "Vlog 精华片段" : "分享内容";
+    return {
+      id: uid(),
+      url,
+      platform: platform.name,
+      platformId: platform.id,
+      title: title + (index ? ` · ${index + 1}` : ""),
+      type: isVideo ? "video" : "image",
+      cover: null,
+      mediaUrl: null,
+      status: "ready",
+      note: isVideo ? "含封面" : "无水印图",
+    };
+  }
+
+  function renderResults() {
+    const list = $("#resultList");
+    const card = $("#resultCard");
+    const count = $("#resultCount");
+    if (!state.results.length) {
+      card.classList.add("collapsed-hide");
+      list.innerHTML = "";
+      return;
+    }
+    card.classList.remove("collapsed-hide");
+    count.textContent = String(state.results.length);
+    list.innerHTML = state.results.map((r) => {
+      const status =
+        r.status === "parsing" ? `<div class="status-line"><div class="spin"></div><span>解析中…</span></div>` :
+        r.status === "ok" ? `<div class="status-line"><span class="chip">${r.note}</span><span>${r.platform}</span></div>` :
+        r.status === "fail" ? `<div class="status-line"><span class="chip warn">解析失败</span><span class="hint" style="margin:0">可用直链下载</span></div>` :
+        `<div class="status-line"><span class="chip muted">${r.platform}</span></div>`;
+      const thumb = r.coverData
+        ? `<img src="${r.coverData}" alt="" />`
+        : `<span>${r.type === "video" ? "VIDEO" : "IMG"}</span><span class="type-tag">${r.platform}</span>`;
+      const actions =
+        r.status === "ok"
+          ? `<button class="btn btn-primary btn-sm" data-act="download" data-id="${r.id}">${r.type === "video" ? "下载视频" : "下载图片"}</button>
+             ${r.type === "video" && state.settings.saveCover ? `<button class="btn btn-ghost btn-sm" data-act="cover" data-id="${r.id}">保存封面</button>` : ""}
+             <button class="btn btn-ghost btn-sm" data-act="copy" data-id="${r.id}">复制链接</button>`
+          : r.status === "fail"
+          ? `<button class="btn btn-ghost btn-sm" data-act="manual" data-id="${r.id}">用直链下载</button>
+             <button class="btn btn-ghost btn-sm" data-act="remove" data-id="${r.id}">移除</button>`
+          : r.status === "parsing"
+          ? ""
+          : `<button class="btn btn-ghost btn-sm" data-act="remove" data-id="${r.id}">移除</button>`;
+      return `<article class="result-item" data-id="${r.id}">
+        <div class="result-head">
+          <div class="thumb">${thumb}</div>
+          <div class="result-meta">
+            <h3>${escapeHtml(r.title)}</h3>
+            <div class="meta-line">
+              <span>${escapeHtml(shortUrl(r.url))}</span>
+            </div>
+            ${status}
+          </div>
+        </div>
+        <div class="result-actions">${actions}</div>
+      </article>`;
+    }).join("");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[c]);
+  }
+
+  function shortUrl(u) {
+    try {
+      const url = new URL(u);
+      return url.hostname.replace(/^www\./, "") + (url.pathname.length > 18 ? url.pathname.slice(0, 18) + "…" : url.pathname);
+    } catch {
+      return u.slice(0, 28);
+    }
+  }
+
+  async function parseOne(item, index) {
+    item.status = "parsing";
+    renderResults();
+    await sleep(600 + Math.random() * 700);
+
+    // Demo / local mode: no real third-party parse API is called.
+    // When a real FastAPI backend exists, POST {url} to /parse and use returned
+    // media_url + cover_url. For the single-file app we mark social links as
+    // "ready" so the download UI is interactive, and always offer manual URL.
+    const isSocial = item.platformId !== "other";
+    if (isSocial) {
+      // Simulated successful parse with demo payload
+      item.status = "ok";
+      item.note = item.type === "video" ? "含封面 · 演示直链" : "无水印图 · 演示直链";
+      item.mediaUrl = null; // no real media in demo
+      item.demo = true;
+      item.coverData = null;
+    } else {
+      // Direct media URL — attempt real HEAD/GET when possible
+      if (/\.(jpe?g|png|webp|gif|mp4|mov|webm)(\?|$)/i.test(item.url)) {
+        item.status = "ok";
+        item.demo = false;
+        item.note = "直链";
+        item.mediaUrl = item.url;
+      } else {
+        item.status = "fail";
+        item.note = "无法识别媒体类型";
+      }
+    }
+    renderResults();
+    return item;
+  }
+
+  async function startParse() {
+    const text = linksInput.value.trim();
+    if (!text) {
+      toast("请先粘贴链接", "err");
+      linksInput.focus();
+      return;
+    }
+    if (state.settings.wifiOnly && navigator.connection && navigator.connection.type && navigator.connection.type !== "wifi") {
+      const proceed = confirm("已开启「仅 Wi-Fi 下载」。当前可能不是 Wi-Fi，仍要解析吗？");
+      if (!proceed) return;
+    }
+
+    const lines = text.split(/\n+/).map((s) => s.trim()).filter(Boolean);
+    const btn = $("#btnParse");
+    btn.disabled = true;
+    $("#parseStatus").hidden = false;
+    $("#parseProgress").style.width = "5%";
+
+    const newItems = lines.map((url, i) => {
+      const platform = detectPlatform(url);
+      const base = makeDemoResult(url, platform, i);
+      return base;
+    });
+
+    state.results = [...newItems, ...state.results].slice(0, 20);
+    renderResults();
+
+    for (let i = 0; i < newItems.length; i++) {
+      $("#parseProgress").style.width = `${((i + 1) / newItems.length) * 100}%`;
+      await parseOne(newItems[i], i);
+    }
+
+    btn.disabled = false;
+    $("#parseStatus").hidden = true;
+    $("#parseProgress").style.width = "0%";
+
+    const failed = newItems.filter((r) => r.status === "fail").length;
+    const ok = newItems.filter((r) => r.status === "ok").length;
+    if (failed && state.settings.failHint) {
+      toast(`解析完成：成功 ${ok}，失败 ${failed}。可改用直链下载`, "err");
+      focusManual();
+    } else {
+      toast(`解析完成：${ok} 条可下载`, "ok");
+    }
+  }
+
+  function openManualBox() {
+    const box = $("#manualBox");
+    if (box && !box.open) box.open = true;
+  }
+
+  function focusManual(name, url) {
+    openManualBox();
+    if (url) $("#directUrl").value = url;
+    if (name) $("#directName").value = name;
+    $("#directUrl").focus();
+  }
+
+  $("#btnParse").addEventListener("click", startParse);
+  $("#btnClearResults").addEventListener("click", () => {
+    state.results = [];
+    renderResults();
+  });
+
+  $("#resultList").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const id = btn.dataset.id;
+    const item = state.results.find((r) => r.id === id);
+    if (!item) return;
+    const act = btn.dataset.act;
+
+    if (act === "remove") {
+      state.results = state.results.filter((r) => r.id !== id);
+      renderResults();
+      return;
+    }
+    if (act === "manual") {
+      focusManual(item.title, item.url);
+      toast("已填入，请补全直链后下载");
+      return;
+    }
+    if (act === "copy") {
+      const text = item.mediaUrl || item.url;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("已复制链接", "ok");
+      } catch {
+        toast("复制失败，请手动复制", "err");
+      }
+      return;
+    }
+    if (act === "download" || act === "cover") {
+      if (item.demo || !item.mediaUrl) {
+        toast("演示模式：未连接解析后端。请用直链下载真实文件", "err");
+        focusManual();
+        return;
+      }
+      await fetchAndDownload(item.mediaUrl, item.title + (act === "cover" ? "_cover" : ""));
+    }
+  });
+
+  $("#btnBatchAll").addEventListener("click", async () => {
+    const ready = state.results.filter((r) => r.status === "ok" && r.mediaUrl && !r.demo);
+    if (!ready.length) {
+      toast("没有可批量下载的真实直链（演示结果请用直链下载）", "err");
+      return;
+    }
+    if (state.settings.wifiOnly && navigator.connection && navigator.connection.type && navigator.connection.type !== "wifi") {
+      if (!confirm("已开启仅 Wi-Fi 下载，仍要继续吗？")) return;
+    }
+    toast(`开始批量下载 ${ready.length} 个文件`);
+    for (const item of ready) {
+      await fetchAndDownload(item.mediaUrl, item.title);
+      await sleep(200);
+    }
+  });
+
+  async function fetchAndDownload(url, name) {
+    try {
+      toast("开始下载…");
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const blob = await res.blob();
+      const ext = (blob.type.split("/")[1] || "bin").replace("jpeg", "jpg");
+      downloadBlob(blob, sanitize(name || "media") + "." + ext);
+      toast("已保存 " + name, "ok");
+    } catch (err) {
+      // Fallback: try opening as navigation download (works for same-origin / CORS-open)
+      try {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = sanitize(name || "media");
+        a.target = "_blank";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        toast("已尝试直接下载（若被拦截请检查跨域）");
+      } catch {
+        toast("下载失败：" + (err.message || "网络错误"), "err");
+      }
+    }
+  }
+
+  function sanitize(s) {
+    return String(s).replace(/[\\/:*?"<>|]+/g, "_").slice(0, 80);
+  }
+
+  $("#btnDirectDownload").addEventListener("click", async () => {
+    const url = $("#directUrl").value.trim();
+    if (!url) {
+      toast("请输入直链", "err");
+      return;
+    }
+    const name = $("#directName").value.trim() || "download";
+    await fetchAndDownload(url, name);
+    // Also try cover sidecar for video URLs when enabled
+    if (state.settings.saveCover && /\.(mp4|mov|webm)(\?|$)/i.test(url)) {
+      toast("视频已下载；封面可在解析结果中一并保存");
+    }
+  });
+
+  renderResults();
+
+  // ---------- ID PHOTO wizard ----------
+  const idCanvas = $("#idCanvas");
+  const idCtx = idCanvas.getContext("2d", { willReadFrequently: true });
+  const idStep = { maxDone: 0, current: 1 };
+
+  function currentSize() {
+    return SIZES[state.id.size];
+  }
+
+  function sizeLabel() {
+    const s = currentSize();
+    return `${s.name} · ${s.mmW}×${s.mmH}mm`;
+  }
+
+  function bgLabel() {
+    const map = {
+      "#FFFFFF": "白底", "#D32F2F": "红底", "#1565C0": "蓝底", "#0D9488": "青底",
+    };
+    const name = map[state.id.bg] || state.id.bg;
+    const mode = state.id.bgMode === "auto" ? "自动抠图" : "仅换底色";
+    return `${name} · ${mode}`;
+  }
+
+  function setIdStep(n) {
+    idStep.current = n;
+    $$(".step-panel[data-step-panel]").forEach((p) => {
+      const s = Number(p.dataset.stepPanel);
+      p.classList.toggle("active", s === n);
+    });
+    $$(".step-panel[data-step-sum]").forEach((p) => {
+      const s = Number(p.dataset.stepSum);
+      p.hidden = !(s < n && s <= idStep.maxDone);
+    });
+    $$("#idStepper .step-dot").forEach((d) => {
+      const s = Number(d.dataset.step);
+      d.classList.toggle("active", s === n);
+      d.classList.toggle("done", s < n && s <= idStep.maxDone);
+    });
+    // keep summaries current
+    $("#sum1Text").textContent = sizeLabel();
+    $("#sum1 .sum-sub").textContent = `${currentSize().pxW} × ${currentSize().pxH} px · 300dpi`;
+    $("#sum3Text").textContent = bgLabel();
+    $("#sum3 .sum-sub").textContent = state.id.soft ? "柔和边缘已开启" : "柔和边缘已关闭";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function completeIdStep(n) {
+    if (n > idStep.maxDone) idStep.maxDone = n;
+    if (n < 4) setIdStep(n + 1);
+    else setIdStep(4);
+  }
+
+  $("#btnStep1Next").addEventListener("click", () => completeIdStep(1));
+  $("#btnStep2Next").addEventListener("click", () => {
+    if (!state.id.image) {
+      toast("请先选择照片", "err");
+      return;
+    }
+    completeIdStep(2);
+  });
+  $("#btnStep3Next").addEventListener("click", () => completeIdStep(3));
+  $("#btnRestartId").addEventListener("click", () => {
+    idStep.maxDone = 0;
+    state.id.image = null;
+    state.id.bg = "#FFFFFF";
+    state.id.bgMode = "auto";
+    $$("#bgSwatches .swatch").forEach((s) => s.classList.toggle("active", s.dataset.color === "#FFFFFF"));
+    $("#customSwatch").style.background = "";
+    $("#stageEmpty").hidden = false;
+    idCanvas.hidden = true;
+    $("#idGuide").hidden = true;
+    $("#stageActions").hidden = true;
+    $("#zoomRow").hidden = true;
+    $("#btnStep2Next").disabled = true;
+    $$("#bgModeSeg button").forEach((b) => b.classList.toggle("active", b.dataset.mode === "auto"));
+    resetCrop();
+    setIdStep(1);
+  });
+  $$("[data-goto]").forEach((btn) => {
+    btn.addEventListener("click", () => setIdStep(Number(btn.dataset.goto)));
+  });
+
+  $$(".size-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      state.id.size = card.dataset.size;
+      $$(".size-card").forEach((c) => c.classList.toggle("active", c === card));
+      const s = currentSize();
+      $("#exportInfo").textContent = `${s.pxW}×${s.pxH}`;
+      $$("#previewStrip .preview-item").forEach((item) => {
+        const c = item.querySelector("canvas");
+        c.width = s.pxW;
+        c.height = s.pxH;
+      });
+      if (state.id.image) resetCrop();
+      syncIdPreview();
+    });
+  });
+
+  $("#btnPickPhoto").addEventListener("click", () => $("#photoInput").click());
+  $("#btnRetake").addEventListener("click", () => $("#photoInput").click());
+
+  $("#photoInput").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast("请选择图片文件", "err");
+      return;
+    }
+    const img = await loadImageFile(file);
+    state.id.image = img;
+    resetCrop();
+    $("#stageEmpty").hidden = true;
+    idCanvas.hidden = false;
+    $("#idGuide").hidden = false;
+    $("#stageActions").hidden = false;
+    $("#zoomRow").hidden = false;
+    $("#btnStep2Next").disabled = false;
+    toast("照片已载入，全部本地处理", "ok");
+    syncIdPreview();
+    e.target.value = "";
+  });
+
+  function loadImageFile(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("图片解码失败"));
+      };
+      img.src = url;
+    });
+  }
+
+  function resetCrop() {
+    state.id.scale = 1;
+    state.id.offsetX = 0;
+    state.id.offsetY = 0;
+    $("#zoomRange").value = "100";
+    $("#zoomVal").textContent = "100%";
+    layoutStage();
+    syncIdPreview();
+  }
+  $("#btnResetCrop").addEventListener("click", () => {
+    resetCrop();
+    toast("已重置构图");
+  });
+
+  function layoutStage() {
+    if (!state.id.image) return;
+    const s = currentSize();
+    const stage = $("#idStage");
+    const maxW = Math.min(stage.clientWidth - 24, 360);
+    const maxH = 400;
+    const scaleFit = Math.min(maxW / s.pxW, maxH / s.pxH);
+    const dw = Math.round(s.pxW * scaleFit);
+    const dh = Math.round(s.pxH * scaleFit);
+    idCanvas.style.width = dw + "px";
+    idCanvas.style.height = dh + "px";
+    idCanvas.width = s.pxW;
+    idCanvas.height = s.pxH;
+
+    const guide = $("#idGuide");
+    const stageW = stage.clientWidth;
+    const stageH = stage.clientHeight;
+    guide.style.width = dw + "px";
+    guide.style.height = dh + "px";
+    guide.style.left = ((stageW - dw) / 2) + "px";
+    guide.style.top = ((stageH - dh) / 2) + "px";
+  }
+
+  window.addEventListener("resize", () => {
+    if (state.view === "id" && state.id.image) {
+      layoutStage();
+      syncIdPreview();
+    }
+  });
+
+  // pan
+  idCanvas.addEventListener("pointerdown", (e) => {
+    if (!state.id.image) return;
+    state.id.dragging = true;
+    state.id.lastX = e.clientX;
+    state.id.lastY = e.clientY;
+    idCanvas.setPointerCapture(e.pointerId);
+  });
+  idCanvas.addEventListener("pointermove", (e) => {
+    if (!state.id.dragging) return;
+    const dx = e.clientX - state.id.lastX;
+    const dy = e.clientY - state.id.lastY;
+    state.id.lastX = e.clientX;
+    state.id.lastY = e.clientY;
+    // convert screen px to canvas px
+    const rect = idCanvas.getBoundingClientRect();
+    const k = idCanvas.width / rect.width;
+    state.id.offsetX += dx * k;
+    state.id.offsetY += dy * k;
+    syncIdPreview();
+  });
+  idCanvas.addEventListener("pointerup", () => { state.id.dragging = false; });
+  idCanvas.addEventListener("pointercancel", () => { state.id.dragging = false; });
+  idCanvas.addEventListener("wheel", (e) => {
+    if (!state.id.image) return;
+    e.preventDefault();
+    const next = Math.min(4, Math.max(1, state.id.scale * (e.deltaY > 0 ? 0.92 : 1.08)));
+    setZoom(next);
+  }, { passive: false });
+
+  $("#zoomRange").addEventListener("input", (e) => {
+    setZoom(Number(e.target.value) / 100);
+  });
+
+  function setZoom(z) {
+    state.id.scale = z;
+    $("#zoomRange").value = String(Math.round(z * 100));
+    $("#zoomVal").textContent = Math.round(z * 100) + "%";
+    syncIdPreview();
+  }
+
+  // bg swatches
+  $$("#bgSwatches .swatch[data-color]").forEach((sw) => {
+    sw.addEventListener("click", () => {
+      state.id.bg = sw.dataset.color;
+      $$("#bgSwatches .swatch").forEach((s) => s.classList.remove("active"));
+      sw.classList.add("active");
+      syncIdPreview();
+    });
+  });
+  $("#customColor").addEventListener("input", (e) => {
+    state.id.bg = e.target.value;
+    $$("#bgSwatches .swatch").forEach((s) => s.classList.remove("active"));
+    $("#customSwatch").classList.add("active");
+    $("#customSwatch").style.background = e.target.value;
+    syncIdPreview();
+  });
+
+  $$("#bgModeSeg button").forEach((b) => {
+    b.addEventListener("click", () => {
+      state.id.bgMode = b.dataset.mode;
+      $$("#bgModeSeg button").forEach((x) => x.classList.toggle("active", x === b));
+      $("#bgHint").textContent =
+        b.dataset.mode === "auto"
+          ? "自动抠图会从四角取样背景色并抠除，适合纯色墙、证件照专用底。"
+          : "仅换底色：不抠图，整幅照片直接叠在底色上（用于原图背景已合适的情况）。";
+      syncIdPreview();
+    });
+  });
+
+  $("#switchSoft").addEventListener("click", () => {
+    state.id.soft = !state.id.soft;
+    $("#switchSoft").setAttribute("aria-checked", String(state.id.soft));
+    syncIdPreview();
+  });
+
+  function drawFitted(ctx, img, w, h, scale, ox, oy) {
+    const base = Math.max(w / img.width, h / img.height) * scale;
+    const dw = img.width * base;
+    const dh = img.height * base;
+    const dx = (w - dw) / 2 + ox;
+    const dy = (h - dh) / 2 + oy;
+    ctx.drawImage(img, dx, dy, dw, dh);
+    return { dx, dy, dw, dh };
+  }
+
+  function sampleBgColor(data, w, h) {
+    // sample 4 corners 8x8
+    const pts = [];
+    const S = 8;
+    function grab(x0, y0) {
+      for (let y = y0; y < y0 + S; y++) {
+        for (let x = x0; x < x0 + S; x++) {
+          const i = (y * w + x) * 4;
+          pts.push([data[i], data[i + 1], data[i + 2]]);
+        }
+      }
+    }
+    grab(0, 0);
+    grab(w - S, 0);
+    grab(0, h - S);
+    grab(w - S, h - S);
+    let r = 0, g = 0, b = 0;
+    pts.forEach((p) => { r += p[0]; g += p[1]; b += p[2]; });
+    return [r / pts.length, g / pts.length, b / pts.length];
+  }
+
+  function hexToRgb(hex) {
+    const h = hex.replace("#", "");
+    return [
+      parseInt(h.slice(0, 2), 16),
+      parseInt(h.slice(2, 4), 16),
+      parseInt(h.slice(4, 6), 16),
+    ];
+  }
+
+  function renderIdToCanvas(target, bgColor, opts = {}) {
+    const s = currentSize();
+    const w = target.width || s.pxW;
+    const h = target.height || s.pxH;
+    if (target.width !== w) target.width = w;
+    if (target.height !== h) target.height = h;
+    const ctx = target.getContext("2d", { willReadFrequently: true });
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, w, h);
+
+    if (!state.id.image) return;
+
+    const { scale, offsetX, offsetY, bgMode, soft } = state.id;
+
+    if (bgMode === "manual") {
+      ctx.drawImage(state.id.image, 0, 0);
+      // redrawing fitted
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, w, h);
+      drawFitted(ctx, state.id.image, w, h, scale, offsetX, offsetY);
+      return;
+    }
+
+    // auto: draw to temp, chroma-key background, composite
+    const tmp = document.createElement("canvas");
+    tmp.width = w;
+    tmp.height = h;
+    const tctx = tmp.getContext("2d", { willReadFrequently: true });
+    drawFitted(tctx, state.id.image, w, h, scale, offsetX, offsetY);
+    const imageData = tctx.getImageData(0, 0, w, h);
+    const d = imageData.data;
+    const [br, bg, bb] = sampleBgColor(d, w, h);
+    const threshold = soft ? 48 : 64;
+    const softStart = soft ? 28 : 40;
+
+    for (let i = 0; i < d.length; i += 4) {
+      const dr = d[i] - br;
+      const dg = d[i + 1] - bg;
+      const db = d[i + 2] - bb;
+      const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+      if (dist < softStart) {
+        d[i + 3] = 0;
+      } else if (dist < threshold) {
+        // feather
+        const t = (dist - softStart) / (threshold - softStart);
+        d[i + 3] = Math.round(d[i + 3] * t);
+      }
+    }
+    tctx.putImageData(imageData, 0, 0);
+    ctx.drawImage(tmp, 0, 0);
+  }
+
+  function syncIdPreview() {
+    if (!state.id.image) {
+      // paint empty previews
+      [["#prevWhite", "#FFFFFF"], ["#prevRed", "#D32F2F"], ["#prevBlue", "#1565C0"]].forEach(([sel, color]) => {
+        const c = $(sel);
+        const s = currentSize();
+        c.width = s.pxW;
+        c.height = s.pxH;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fillStyle = "rgba(15,23,42,.25)";
+        ctx.font = "12px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("预览", c.width / 2, c.height / 2);
+      });
+      return;
+    }
+
+    layoutStage();
+    renderIdToCanvas(idCanvas, state.id.bg);
+    renderIdToCanvas($("#prevWhite"), "#FFFFFF");
+    renderIdToCanvas($("#prevRed"), "#D32F2F");
+    renderIdToCanvas($("#prevBlue"), "#1565C0");
+  }
+
+  function exportPhoto(format) {
+    if (!state.id.image) {
+      toast("请先选择照片", "err");
+      return;
+    }
+    const s = currentSize();
+    const out = document.createElement("canvas");
+    out.width = s.pxW;
+    out.height = s.pxH;
+    renderIdToCanvas(out, state.id.bg);
+
+    // 300dpi metadata via PNG pHYs is not trivial for JPG; we encode at exact px
+    // which equals physical size at 300dpi. Name encodes mm + dpi.
+    const label = `${s.name}_${s.mmW}x${s.mmH}mm_300dpi`;
+    out.toBlob((blob) => {
+      if (!blob) {
+        toast("导出失败", "err");
+        return;
+      }
+      downloadBlob(blob, label + (format === "png" ? ".png" : ".jpg"));
+      toast(`已导出 ${label}`, "ok");
+    }, format === "png" ? "image/png" : "image/jpeg", 0.92);
+  }
+
+  $("#btnExportJpg").addEventListener("click", () => exportPhoto("jpg"));
+  $("#btnExportPng").addEventListener("click", () => exportPhoto("png"));
+
+  // initial
+  syncSwitches();
+  setIdStep(1);
+  setView("extract");
+  syncIdPreview();
+})();
+</script>
+</body>
+</html>
